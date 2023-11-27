@@ -17,16 +17,14 @@ http://5.35.83.245:8080/home
 - **_AIRFLOW_1**
 
 ### Доступ к Postgresql
-- host:port **5.35.83.245:5432**
+- host: **5.35.83.245**
+- port: **5432**
 - database: **movies_database**
 - login **app**
 - pass **123qwe**
 
 ### Доступ к Elasticsearch
 http://5.35.83.245:9200/content/_search?pretty=true
-
-http://5.35.83.245:9200/content/_search?pretty=true
-
 
 
 ## Запуск проекта локально
