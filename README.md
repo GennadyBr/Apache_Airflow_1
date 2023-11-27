@@ -1,44 +1,43 @@
 # Презентация кастомного ETL сервиса на Airflow для оркестрации миграции данных 
 - из SQLite в Postgresql для внутренних служб корпорации
 - из Postgresql в Elasticseach для организации полнотекстового поиска по данным
-**проект создан для демонстрации возможностей Airflow и не является действующим коммерческим проектом**
 
+**проект создан для демонстрации Airflow, в нем реализованы следующие возможности**
+- задание параметров через DAG Params
+- операторы ветвления Airflow
 
 ## Запуск проекта на сайте
 http://5.35.83.245:8080/home
 
 ### Авторизация
-login airflow
-pass airflow
+- login airflow
+- pass airflow
 
 ### Название DAG
-_AIRFLOW_1
+- _AIRFLOW_1
 
 ### Доступ к Postgresql
-host:port 5.35.83.245:5432
-database: movies_database
-login app
-pass 123qwe
+- host:port 5.35.83.245:5432
+- database: movies_database
+- login app
+- pass 123qwe
 
 ### Доступ к Elasticsearch
-http://localhost:9200/content/_search?pretty=true
+http://5.35.83.245:9200/content/_search?pretty=true
 
-http://158.160.125.14:9200/content/_search?pretty=true
+http://5.35.83.245:9200/content/_search?pretty=true
 
 
 
 ## Запуск проекта локально
 ### Скачать проект на локальную машину
 
-git clone
+- git clone
 
 [Ссылка на проект](https://github.com/GennadyBr/airflow_1)
 
 ### Запустить проект на локальной машине
-docker compose up -d --build
-
-### Доступ к Airflow
-http://0.0.0.0:8080
+- docker compose up -d --build
 
 ### Настройка Airflow-Admin-Connection
 ### Postgres
