@@ -28,7 +28,7 @@ SQLITE_FIELDS_TO_SQL = {
 
 
 @contextmanager
-def conn_context(db_name: str):
+def _conn_context(db_name: str) -> sqlite3.Connection:
     """подключение к базе SQLite"""
     if 'out' in db_name:
         db_path = db_name
@@ -71,7 +71,7 @@ def sqlite_get_updated_movies_ids(ti: TaskInstance, **context) -> Set:
     db_name = BaseHook.get_connection(context["params"]["in_db_id"]).schema
     logging.info(f"{db_name=}")
 
-    with conn_context(db_name) as conn:
+    with _conn_context(db_name) as conn:
         with closing(conn.cursor()) as cursor:
             try:
                 cursor.execute(query, (updated_state_sqlite,))
@@ -115,7 +115,7 @@ def sqlite_get_films_data(ti: TaskInstance, **context):
     db_name = BaseHook.get_connection(context["params"]["in_db_id"]).schema
     logging.info(f"{db_name=}")
 
-    with conn_context(db_name) as conn:
+    with _conn_context(db_name) as conn:
         with closing(conn.cursor()) as cursor:
             try:
                 cursor.execute(query)
@@ -145,7 +145,7 @@ def sqlite_preprocess(ti: TaskInstance, **context):
     return json.dumps(transformed_films_data, indent=4)
 
 
-def prepare_insert_values_list(films_data) -> Tuple[List, Tuple]:
+def _prepare_insert_values_list(films_data: json) -> Tuple[List, Tuple]:
     """Подготовка списка данных к загрузке"""
     values_list = []
     fields = None
@@ -157,7 +157,7 @@ def prepare_insert_values_list(films_data) -> Tuple[List, Tuple]:
     return values_list, fields
 
 
-def prepare_insert_query(films_data, fields) -> str:
+def _prepare_insert_query(films_data: json, fields: tuple) -> str:
     """Подготовка SQL команды к загрузке"""
     query = f"""
             INSERT OR IGNORE INTO {SQLiteDBTables.film.value} {fields}
@@ -168,7 +168,7 @@ def prepare_insert_query(films_data, fields) -> str:
     return query
 
 
-def prepare_create_query() -> str:
+def _prepare_create_query() -> str:
     """Подготовка SQL команды к созданию таблицы"""
     return f"""
             CREATE TABLE IF NOT EXISTS {SQLiteDBTables.film.value} (    
@@ -216,7 +216,7 @@ def insert_into_new_table(insertion_query, values_list, cursor):
         raise err
 
 
-def test_select_count(cursor):
+def _test_select_count(cursor):
     """Проверка добавления данных в таблицу film_work"""
     try:
         cursor.execute("""SELECT COUNT(*) FROM film_work""")
@@ -242,11 +242,11 @@ def sqlite_write(ti: TaskInstance, **context):
     db_name = BaseHook.get_connection(context["params"]["out_db_id"]).schema
     logging.info(f"{db_name=}")
 
-    creation_query = prepare_create_query()
-    values_list, fields = prepare_insert_values_list(films_data)
-    insertion_query = prepare_insert_query(films_data, fields)
+    creation_query = _prepare_create_query()
+    values_list, fields = _prepare_insert_values_list(films_data)
+    insertion_query = _prepare_insert_query(films_data, fields)
 
-    with conn_context(db_name) as conn:
+    with _conn_context(db_name) as conn:
         with closing(conn.cursor()) as cursor:
             drop_table_if_exists(cursor)
             conn.commit()
@@ -257,4 +257,4 @@ def sqlite_write(ti: TaskInstance, **context):
             insert_into_new_table(insertion_query, values_list, cursor)
             conn.commit()
 
-            test_select_count(cursor)
+            _test_select_count(cursor)

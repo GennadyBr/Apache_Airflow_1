@@ -1,4 +1,4 @@
-from typing import List, Dict
+from typing import List, Dict, Union
 from datetime import datetime
 import copy
 import json
@@ -19,12 +19,12 @@ from db_schemas.es import MOVIES_BASE, MOVIE_FIELDS
 from utils import transform
 
 
-def _es_hosts(conn) -> List[str]:
+def _es_hosts(conn: BaseHook) -> List[str]:
     """Получение строки подключения Elasticsearch"""
     return [f"http://{conn.host}:{conn.port}"]
 
 
-def get_es_connection(connection) -> ElasticsearchPythonHook:
+def _get_es_connection(connection: str) -> ElasticsearchPythonHook:
     """Получение connection Elasticsearch"""
     conn = BaseHook.get_connection(connection)
     es_hook = ElasticsearchPythonHook(hosts=_es_hosts(conn))
@@ -32,7 +32,7 @@ def get_es_connection(connection) -> ElasticsearchPythonHook:
     return es_conn
 
 
-def prepare_query_with_updated_state(ti: TaskInstance) -> Dict:
+def _prepare_query_with_updated_state(ti: TaskInstance) -> Dict:
     """Подготовка updated_state"""
     updated_state = (
             ti.xcom_pull(
@@ -52,7 +52,7 @@ def prepare_query_with_updated_state(ti: TaskInstance) -> Dict:
     return query
 
 
-def get_transformed_items(init_items, fields) -> List:
+def _get_transformed_items(init_items: List, fields: List[str]) -> List:
     """Подготовка transformed_items"""
     required_fields = [DBFields[field].value for field in fields]
     logging.info(required_fields)
@@ -71,13 +71,23 @@ def get_transformed_items(init_items, fields) -> List:
     return transformed_items
 
 
-def es_get_films_data(ti: TaskInstance, **context):
+def _get_index_schema(fields: List[str]) -> Dict:
+    """Подготовка schema"""
+    filed_properties = {
+        DBFields[k].value: v for k, v in MOVIE_FIELDS.items() if k in fields
+    }
+    schema = copy.deepcopy(MOVIES_BASE)
+    schema["mappings"]["properties"] = filed_properties
+    return schema
+
+
+def es_get_films_data(ti: TaskInstance, **context) -> str:
     """Сбор обновленных данных"""
 
     # get es connection
-    es_conn = get_es_connection(context["params"]["in_db_id"])
+    es_conn = _get_es_connection(context["params"]["in_db_id"])
 
-    query = prepare_query_with_updated_state(ti)
+    query = _prepare_query_with_updated_state(ti)
     logging.info(query)
 
     items = es_conn.search(
@@ -88,7 +98,7 @@ def es_get_films_data(ti: TaskInstance, **context):
     items = items["hits"]["hits"]
     logging.info(items)
 
-    transformed_items = get_transformed_items(items, context["params"]["fields"])
+    transformed_items = _get_transformed_items(items, context["params"]["fields"])
     logging.info(transformed_items)
 
     if transformed_items:
@@ -99,26 +109,16 @@ def es_get_films_data(ti: TaskInstance, **context):
     return json.dumps(transformed_items, indent=4)
 
 
-def get_index_schema(fields: List[str]) -> Dict:
-    """Подготовка schema"""
-    filed_properties = {
-        DBFields[k].value: v for k, v in MOVIE_FIELDS.items() if k in fields
-    }
-    schema = copy.deepcopy(MOVIES_BASE)
-    schema["mappings"]["properties"] = filed_properties
-    return schema
-
-
 def es_create_index(ti: TaskInstance, **context):
     """Создание Индекса в Elasticsearch"""
     conn = BaseHook.get_connection(context["params"]["out_db_id"])
     es_hook = ElasticsearchPythonHook(hosts=[f"http://{conn.host}:{conn.port}"])
     es_conn = es_hook.get_conn
     logging.info(context["params"]["fields"])
-    logging.info(get_index_schema(context["params"]["fields"]))
+    logging.info(_get_index_schema(context["params"]["fields"]))
     response = es_conn.indices.create(
         index=context["params"]["out_db_params"]["index"],
-        body=get_index_schema(context["params"]["fields"]),
+        body=_get_index_schema(context["params"]["fields"]),
         ignore=400,
     )
     if "acknowledged" in response:
@@ -129,7 +129,7 @@ def es_create_index(ti: TaskInstance, **context):
     logging.info(response)
 
 
-def es_preprocess(ti: TaskInstance, **context):
+def es_preprocess(ti: TaskInstance, **context) -> Union[str, None]:
     """Преобразование данных для Elasticsearch"""
     prev_task = ti.xcom_pull(task_ids="in_db_branch_task")[-1]
     films_data = ti.xcom_pull(task_ids=prev_task)
