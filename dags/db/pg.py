@@ -1,4 +1,4 @@
-from typing import List, Dict, Set
+from typing import Set
 from datetime import datetime
 import json
 import logging
@@ -25,9 +25,12 @@ PG_FIELDS_TO_SQL = {
     DBFields.film_type.name: "fw.type",
     DBFields.film_created_at.name: "TO_CHAR(fw.created_at, %(dt_fmt)s) AS created_at",
     DBFields.film_updated_at.name: "TO_CHAR(fw.updated_at, %(dt_fmt)s) AS updated_at",
-    DBFields.actors.name: "JSON_AGG(DISTINCT jsonb_build_object('id', p.id::text, 'full_name', p.full_name)) FILTER (WHERE pfw.role = 'actor') AS actors",
-    DBFields.writers.name: "JSON_AGG(DISTINCT jsonb_build_object('id', p.id::text, 'full_name', p.full_name)) FILTER (WHERE pfw.role = 'writer') AS writers",
-    DBFields.directors.name: "JSON_AGG(DISTINCT jsonb_build_object('id', p.id::text, 'full_name', p.full_name)) FILTER (WHERE pfw.role = 'director') AS directors",
+    DBFields.actors.name: "JSON_AGG(DISTINCT jsonb_build_object('id', p.id::text, 'full_name', p.full_name)) "
+                          "FILTER (WHERE pfw.role = 'actor') AS actors",
+    DBFields.writers.name: "JSON_AGG(DISTINCT jsonb_build_object('id', p.id::text, 'full_name', p.full_name)) "
+                           "FILTER (WHERE pfw.role = 'writer') AS writers",
+    DBFields.directors.name: "JSON_AGG(DISTINCT jsonb_build_object('id', p.id::text, 'full_name', p.full_name)) "
+                             "FILTER (WHERE pfw.role = 'director') AS directors",
     DBFields.genre.name: "JSON_AGG(DISTINCT jsonb_build_object('id', g.id::text, 'name', g.name)) AS genre",
 }
 
@@ -107,7 +110,7 @@ def pg_get_films_data(ti: TaskInstance, **context):
 
 
 def pg_create_schema(ti: TaskInstance, **context):
-    """Создание схемы в Постгрес"""
+    """Создание схемы в Postgres"""
     pg_hook = PostgresHook(postgres_conn_id=context["params"]["out_db_id"])
     pg_conn = pg_hook.get_conn()
     cursor = pg_conn.cursor(cursor_factory=RealDictCursor)
@@ -126,7 +129,8 @@ def pg_create_schema(ti: TaskInstance, **context):
     ]
     field_properties = ", ".join(field_properties)
     query = f"""
-    CREATE TABLE IF NOT EXISTS {context['params']['out_db_params']['schema']}.{context['params']['out_db_params']['table']} ({field_properties})
+    CREATE TABLE IF NOT EXISTS {context['params']['out_db_params']['schema']}.
+    {context['params']['out_db_params']['table']} ({field_properties})
     """
     logging.info(query)
     cursor.execute(query)
@@ -164,7 +168,7 @@ def pg_preprocess(ti: TaskInstance, **context):
 
 
 def pg_write(ti: TaskInstance, **context):
-    """Запись данных в Постгрес"""
+    """Запись данных в Postgres"""
     films_data = ti.xcom_pull(task_ids="pg_preprocess")
     logging.info(f'{films_data=}')
     films_data = json.loads(films_data)
@@ -189,7 +193,8 @@ def pg_write(ti: TaskInstance, **context):
 
     query = (
             f"""
-    INSERT INTO {context['params']['out_db_params']['schema']}.{context['params']['out_db_params']['table']} ({field_properties})
+    INSERT INTO {context['params']['out_db_params']['schema']}.
+    {context['params']['out_db_params']['table']} ({field_properties})
     """
             + """
     VALUES {} 

@@ -13,15 +13,16 @@ def get_person_json(persons: Dict[str, str]) -> List[Dict[str, str]]:
     """Формирование данных по персонам в виде {id: ..., name: ...}"""
     if persons is None:
         return [{}]
-    
+
     result = []
     for person in persons:
         result.append({person["id"]: person["full_name"]})
     return result
 
+
 def get_genres(genres: Dict[str, str]) -> List[str]:
     """Формирование данных по жанрам в виде [name]"""
     if genres is None:
         return []
-    
+
     return [genre["name"] for genre in genres]

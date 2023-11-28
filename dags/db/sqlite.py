@@ -1,4 +1,4 @@
-from typing import List, Dict, Set, Tuple
+from typing import List, Set, Tuple
 from datetime import datetime
 import time
 import json
@@ -20,16 +20,19 @@ SQLITE_FIELDS_TO_SQL = {
     DBFields.film_type.name: "fw.type",
     DBFields.film_created_at.name: "fw.created_at",
     DBFields.film_updated_at.name: "fw.updated_at",
-    DBFields.actors.name: "STRING_AGG(DISTINCT p.id::text || ' : ' || p.full_name, ', ') FILTER (WHERE pfw.role = 'actor')",
-    DBFields.writers.name: "STRING_AGG(DISTINCT p.id::text || ' : ' || p.full_name, ', ') FILTER (WHERE pfw.role = 'writer')",
-    DBFields.directors.name: "STRING_AGG(DISTINCT p.id::text || ' : ' || p.full_name, ', ') FILTER (WHERE pfw.role = 'director')",
+    DBFields.actors.name: "STRING_AGG(DISTINCT p.id::text || ' : ' || p.full_name, ', ') "
+                          "FILTER (WHERE pfw.role = 'actor')",
+    DBFields.writers.name: "STRING_AGG(DISTINCT p.id::text || ' : ' || p.full_name, ', ') "
+                           "FILTER (WHERE pfw.role = 'writer')",
+    DBFields.directors.name: "STRING_AGG(DISTINCT p.id::text || ' : ' || p.full_name, ', ') "
+                             "FILTER (WHERE pfw.role = 'director')",
     DBFields.genre.name: "STRING_AGG(DISTINCT g.name, ', ')",
 }
 
 
 @contextmanager
 def _conn_context(db_name: str) -> sqlite3.Connection:
-    """подключение к базе SQLite"""
+    """Подключение к базе SQLite"""
     if 'out' in db_name:
         db_path = db_name
     else:

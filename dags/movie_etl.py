@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import timedelta
 import logging
 
 from airflow import DAG
@@ -11,7 +11,7 @@ from airflow.operators.python import PythonOperator
 from airflow.utils.dates import days_ago
 from airflow.models.param import Param
 
-from settings import DBFields, MOVIES_UPDATED_STATE_KEY, MOVIES_UPDATED_STATE_KEY_TMP
+from settings import DBFields, MOVIES_UPDATED_STATE_KEY  # , MOVIES_UPDATED_STATE_KEY_TMP
 from db.sqlite import sqlite_get_films_data, sqlite_get_updated_movies_ids, sqlite_preprocess, sqlite_write
 from db.pg import (
     pg_get_films_data,
@@ -149,7 +149,7 @@ with DAG(
 
     final = DummyOperator(task_id="final")
 
-    ##### SQLite
+    # SQLite
 
     task_sqlite_get_movies_ids = PythonOperator(
         task_id="sqlite_get_updated_movies_ids",
@@ -176,7 +176,7 @@ with DAG(
         provide_context=True,
     )
 
-    ##### Postgres
+    # Postgres
 
     task_pg_get_movies_ids = PythonOperator(
         task_id="pg_get_updated_movies_ids",
@@ -209,7 +209,7 @@ with DAG(
         provide_context=True,
     )
 
-    ##### Elasticsearch
+    # Elasticsearch
 
     task_es_get_films_data = PythonOperator(
         task_id="es_get_films_data",
