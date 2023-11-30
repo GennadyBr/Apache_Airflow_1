@@ -84,6 +84,8 @@ services:
       retries: 50
       start_period: 30s
     restart: always
+    volumes:
+      - redis-airflow-volume:/var/lib/postgresql/data
 
   airflow-webserver:
     <<: *airflow-common
@@ -268,3 +270,4 @@ volumes:
   movies-db-pg-volume:
   movies-db-es-volume:
   postgres-airflow-volume:
+  redis-airflow-volume:
