@@ -266,6 +266,11 @@ services:
       airflow-init:
         condition: service_completed_successfully
 
+networks:
+  default:
+    name: nginx_proxy
+    external: true
+    
 volumes:
   movies-db-pg-volume:
   movies-db-es-volume:
