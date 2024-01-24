@@ -42,8 +42,10 @@ services:
       # - ./postgres/init_db.sql:/docker-entrypoint-initdb.d/db.sql
       - ./dump.sql:/docker-entrypoint-initdb.d/dump.sql:ro
       - movies-db-pg-volume:/var/lib/postgresql/data
-    ports:
-      - ${MOVIES_DB_PG_PORT}:5432
+    expose:
+      - 5432
+#    ports:
+#      - ${MOVIES_DB_PG_PORT}:5432
     restart: always
 
   movies_es_db:
