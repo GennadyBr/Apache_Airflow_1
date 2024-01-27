@@ -33,7 +33,7 @@ x-airflow-common:
 
 services:
   movies_pg_db:
-    image: postgres:14.1-alpine
+    image: postgres:13
     environment:
       POSTGRES_USER: ${MOVIES_DB_PG_USER}
       POSTGRES_PASSWORD: ${MOVIES_DB_PG_PASSWORD}
@@ -61,7 +61,7 @@ services:
     restart: always
 
   postgres:
-    image: postgres:14.1-alpine
+    image: postgres:13
     environment:
       POSTGRES_USER: ${AIRFLOW_PG_USER}
       POSTGRES_PASSWORD: ${AIRFLOW_PG_PASSWORD}
