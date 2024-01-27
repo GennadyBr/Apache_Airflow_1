@@ -33,7 +33,7 @@ x-airflow-common:
 
 services:
   movies_pg_db:
-    image: postgres:13
+    image: postgres:14.1-alpine
     environment:
       POSTGRES_USER: ${MOVIES_DB_PG_USER}
       POSTGRES_PASSWORD: ${MOVIES_DB_PG_PASSWORD}
@@ -49,7 +49,7 @@ services:
     restart: always
 
   movies_es_db:
-    image: elasticsearch:8.6.2
+    image: elasticsearch:8.10.2
     environment:
       - "discovery.type=single-node"
       - "xpack.security.enabled=false"
@@ -61,7 +61,7 @@ services:
     restart: always
 
   postgres:
-    image: postgres:13
+    image: postgres:14.1-alpine
     environment:
       POSTGRES_USER: ${AIRFLOW_PG_USER}
       POSTGRES_PASSWORD: ${AIRFLOW_PG_PASSWORD}
