@@ -48,17 +48,17 @@ services:
 #      - ${MOVIES_DB_PG_PORT}:5432
     restart: always
 
-  movies_es_db:
-    image: elasticsearch:8.10.2
-    environment:
-      - "discovery.type=single-node"
-      - "xpack.security.enabled=false"
-      - "ES_JAVA_OPTS=-Xms200m -Xmx200m"
-    volumes:
-      - movies-db-es-volume:/usr/share/elasticsearch/data
-    ports:
-      - ${MOVIES_DB_ES_HOST}:9200
-    restart: always
+#  movies_es_db:
+#    image: elasticsearch:8.10.2
+#    environment:
+#      - "discovery.type=single-node"
+#      - "xpack.security.enabled=false"
+#      - "ES_JAVA_OPTS=-Xms200m -Xmx200m"
+#    volumes:
+#      - movies-db-es-volume:/usr/share/elasticsearch/data
+#    ports:
+#      - ${MOVIES_DB_ES_HOST}:9200
+#    restart: always
 
   postgres:
     image: postgres:13
